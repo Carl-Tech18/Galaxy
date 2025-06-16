@@ -1,9 +1,18 @@
-body {
+* {
   margin: 0;
-  overflow: hidden;
-  background: black;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-canvas {
+html, body {
+  width: 100%;
+  height: 100%;
+  background-color: black;
+  overflow: hidden;
+}
+
+canvas#galaxyCanvas {
   display: block;
+  width: 100%;
+  height: 100%;
 }
