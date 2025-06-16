@@ -37,7 +37,7 @@ geom.setAttribute("color", new THREE.BufferAttribute(col,3));
 const sprite = new THREE.TextureLoader().load("https://threejs.org/examples/textures/sprites/disc.png");
 
 const mat = new THREE.PointsMaterial({
-  size: 0.7,
+  size: 1.2,
   vertexColors: true,
   map: sprite,
   blending: THREE.AdditiveBlending,
@@ -59,6 +59,10 @@ function animate() {
   requestAnimationFrame(animate);
   galaxy.rotation.y += 0.001;
   controls.update();
+  camera.position.x = Math.sin(Date.now() * 0.0001) * 150;
+camera.position.z = Math.cos(Date.now() * 0.0001) * 150;
+camera.lookAt(scene.position);
+  
   renderer.render(scene, camera);
 }
 animate();
