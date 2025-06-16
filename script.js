@@ -1,69 +1,64 @@
+const canvas = document.querySelector("#canvas");
 const scene = new THREE.Scene();
-
-const camera = new THREE.PerspectiveCamera(
-  75,
-  window.innerWidth / window.innerHeight,
-  0.1,
-  1000
-);
+const camera = new THREE.PerspectiveCamera(75, innerWidth/innerHeight, 0.1, 1000);
 camera.position.z = 150;
 
-const renderer = new THREE.WebGLRenderer({
-  canvas: document.getElementById("galaxyCanvas"),
-  antialias: true,
-});
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(window.devicePixelRatio);
+const renderer = new THREE.WebGLRenderer({ canvas, antialias:true });
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(devicePixelRatio);
 
-// Controls
 const controls = new THREE.OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
 
-// Galaxy particles
-const particles = 15000;
-const geometry = new THREE.BufferGeometry();
-const positions = [];
-const colors = [];
+const count = 20000;
+const geom = new THREE.BufferGeometry();
+const pos = new Float32Array(count*3);
+const col = new Float32Array(count*3);
 
-for (let i = 0; i < particles; i++) {
-  const radius = Math.random() * 80;
-  const angle = radius * 0.15 + (i % 6) * Math.PI / 3;
-  const spiralOffset = radius * 0.4;
+for (let i=0; i<count; i++) {
+  const i3 = i*3;
+  const radius = Math.random()*80;
+  const arm = i % 5;
+  const angle = radius * 0.3 + arm * (2*Math.PI/5);
+  const offset = radius * 0.4;
 
-  const x = radius * Math.cos(angle) + (Math.random() - 0.5) * spiralOffset;
-  const y = (Math.random() - 0.5) * 30;
-  const z = radius * Math.sin(angle) + (Math.random() - 0.5) * spiralOffset;
+  pos[i3]   = Math.cos(angle)*radius + (Math.random()-0.5)*offset;
+  pos[i3+1] = (Math.random()-0.5)*30;
+  pos[i3+2] = Math.sin(angle)*radius + (Math.random()-0.5)*offset;
 
-  positions.push(x, y, z);
-
-  const color = new THREE.Color(`hsl(${(i / particles) * 360}, 100%, 50%)`);
-  colors.push(color.r, color.g, color.b);
+  const hue = (radius / 80) * 360;
+  const c = new THREE.Color(`hsl(${hue},80%,60%)`);
+  col[i3] = c.r; col[i3+1] = c.g; col[i3+2] = c.b;
 }
 
-geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+geom.setAttribute("position", new THREE.BufferAttribute(pos,3));
+geom.setAttribute("color", new THREE.BufferAttribute(col,3));
 
-const material = new THREE.PointsMaterial({
-  size: 0.5,
+const sprite = new THREE.TextureLoader().load("https://threejs.org/examples/textures/sprites/disc.png");
+
+const mat = new THREE.PointsMaterial({
+  size: 0.7,
   vertexColors: true,
+  map: sprite,
   blending: THREE.AdditiveBlending,
   transparent: true,
-  depthWrite: false
+  depthWrite: false,
+  sizeAttenuation: true
 });
 
-const galaxy = new THREE.Points(geometry, material);
+const galaxy = new THREE.Points(geom, mat);
 scene.add(galaxy);
 
-// Animate
+window.addEventListener("resize", ()=>{
+  camera.aspect = innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
 function animate() {
   requestAnimationFrame(animate);
-  galaxy.rotation.y += 0.0015;
+  galaxy.rotation.y += 0.001;
+  controls.update();
   renderer.render(scene, camera);
 }
 animate();
-
-// Handle resize
-window.addEventListener("resize", () => {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-});
